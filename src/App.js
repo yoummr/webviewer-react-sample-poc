@@ -8,6 +8,7 @@ const App = () => {
   const viewer = useRef(null);
 
   // if using a class, equivalent of componentDidMount
+  const updatedAnno = `<?xml version="1.0" encoding="UTF-8" ?><xfdf xmlns="http://ns.adobe.com/xfdf/" xml:space="preserve"><fields /><annots><square page="0" rect="100,592,300,642" color="#000000" flags="print" name="0f08c438-d16f-f7cd-062b-de9265843ee3" title="Rahman" subject="Rectangle" date="D:20241112113649-05'00'" creationdate="D:20241112113649-05'00'"/><circle page="0" rect="415.02,353.61,585.26,557.23" color="#E44234" flags="print" name="c31d427f-1e61-bba1-61c7-948272925849" title="Rahman" subject="Ellipse" date="D:20241112113655-05'00'" creationdate="D:20241112113654-05'00'"/><circle page="0" rect="212.52,207.86,322.67,311.33" color="#E44234" flags="print" name="c93d2f87-a111-7f09-c5df-9838948e1ae8" title="Rahman" subject="Ellipse" date="D:20241112113655-05'00'" creationdate="D:20241112113655-05'00'"/></annots><pages><defmtx matrix="1,0,0,-1,0,792" /></pages></xfdf>`;
 
   useEffect(() => {
     // If you prefer to use the Iframe implementation, you can replace this line with: WebViewer.Iframe(...)
@@ -16,11 +17,14 @@ const App = () => {
       {
         path: "/webviewer/lib",
 
-        initialDoc: "/files/PDFTRON_about.pdf",
+        initialDoc: "/files/PDFTRON_about.pdf", // API url for getting file from API, from database.
+        ui: "legacy",
 
         licenseKey:
           "demo:1731121654634:7efda14b0300000000d88442aeb7486771ed6c1b5dc3ea77601e2b2e98",
       },
+
+      // linner doc streaming.
 
       viewer.current
     ).then((instance) => {
@@ -36,12 +40,26 @@ const App = () => {
             console.log(
               await annotationManager.exportAnnotations({
                 links: false,
-
                 widgets: false,
               })
             );
+
+            // API call for saving xfdf;
           },
         });
+      });
+      documentViewer.setDocumentXFDFRetriever(async () => {
+        // load the annotation data
+        //const response = await fetch("path/to/annotation/server");
+        //const xfdfString = await response.text();
+        const xfdfString = updatedAnno;
+
+        // <xfdf>
+        // <annots>
+        // <text subject="Comment" page="0" color="#FFE6A2" ... />
+        // </annots>
+        // </xfdf>
+        return xfdfString;
       });
 
       documentViewer.addEventListener("documentLoaded", () => {
